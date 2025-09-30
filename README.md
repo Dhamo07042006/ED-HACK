@@ -76,3 +76,67 @@ aptitude-system/
 │   └── package.json
 ├── users.db                        # SQLite DB at project root
 └── README.md
+
+
+# ================================
+# ED-HACK End-to-End Project Runing Guide
+# ================================
+
+# 1️⃣ Set working directory
+$ProjectRoot = "C:\Users\Dhamodaran G\Desktop\ED-HACK"
+$BackendDir = "$ProjectRoot\backend"
+$FrontendDir = "$ProjectRoot\frontend"
+
+# 2️⃣ Clone repo (final branch)
+if (!(Test-Path $ProjectRoot)) {
+    git clone -b final https://github.com/Dhamo07042006/ED-HACK.git $ProjectRoot
+} else {
+    Write-Host "Repo already exists. Pulling latest changes..."
+    cd $ProjectRoot
+    git pull origin final
+}
+
+# 3️⃣ Navigate to backend
+cd backend
+
+# 4️⃣ Remove old virtual environment if exists
+if (Test-Path ".\venv") {
+    Write-Host "Removing old virtual environment..."
+    Remove-Item -Recurse -Force .\venv
+}
+
+# 5️⃣ Create new virtual environment
+python -m venv venv
+
+# 6️⃣ Activate virtual environment
+Write-Host "Activating virtual environment..."
+& .\venv\Scripts\Activate.ps1
+
+# 7️⃣ Upgrade pip
+python -m pip install --upgrade pip
+
+# 8️⃣ Install Python dependencies
+pip install -r requirements.txt
+
+# 9️⃣ Create database tables
+Write-Host "Creating database tables..."
+python -c "from app import db, app; from app.models import User; with app.app_context(): db.create_all(); print('Tables created successfully')"
+
+# 🔟 Start Flask backend
+Write-Host "Starting Flask backend on http://127.0.0.1:5000..."
+Start-Process powershell -ArgumentList "flask run" -NoNewWindow
+
+# 1️⃣1️⃣ Start React frontend
+cd frontend
+
+# Install frontend dependencies if node_modules missing
+if (!(Test-Path ".\node_modules")) {
+    Write-Host "Installing frontend dependencies..."
+    npm install
+}
+
+Write-Host "Starting React frontend on http://localhost:3000..."
+Start-Process powershell -ArgumentList "npm start" -NoNewWindow
+
+Write-Host "✅ ED-HACK RMDE script completed!"
+
