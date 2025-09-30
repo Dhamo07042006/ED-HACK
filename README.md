@@ -81,62 +81,158 @@ aptitude-system/
 # ================================
 # ED-HACK End-to-End Project Runing Guide
 # ================================
+# ED-HACK Project: RMED Guide (End-to-End)
 
-# 1️⃣ Set working directory
-$ProjectRoot = "C:\Users\Dhamodaran G\Desktop\ED-HACK"
-$BackendDir = "$ProjectRoot\backend"
-$FrontendDir = "$ProjectRoot\frontend"
+## 1️⃣ R — Run (Clone the Project)
 
-# 2️⃣ Clone repo (final branch)
-if (!(Test-Path $ProjectRoot)) {
-    git clone -b final https://github.com/Dhamo07042006/ED-HACK.git $ProjectRoot
-} else {
-    Write-Host "Repo already exists. Pulling latest changes..."
-    cd $ProjectRoot
-    git pull origin final
-}
+1. Open **PowerShell** or terminal.
+2. Navigate to where you want to clone the project:
 
-# 3️⃣ Navigate to backend
+```powershell
+cd "C:\Users\Dhamodaran G\Desktop"
+```
+
+3. Clone the `final` branch:
+
+```powershell
+git clone -b final https://github.com/Dhamo07042006/ED-HACK.git
+cd ED-HACK
+```
+
+**Learnings:**
+- `git clone` downloads the project.
+- `-b final` clones a specific branch.
+
+---
+
+## 2️⃣ M — Manage (Setup Virtual Environment & Dependencies)
+
+### Step 2.1: Navigate to backend
+```powershell
 cd backend
+```
 
-# 4️⃣ Remove old virtual environment if exists
-if (Test-Path ".\venv") {
-    Write-Host "Removing old virtual environment..."
-    Remove-Item -Recurse -Force .\venv
-}
-
-# 5️⃣ Create new virtual environment
+### Step 2.2: Create a virtual environment
+```powershell
 python -m venv venv
+```
 
-# 6️⃣ Activate virtual environment
-Write-Host "Activating virtual environment..."
-& .\venv\Scripts\Activate.ps1
+**Learn:** Virtual environments isolate project dependencies.
 
-# 7️⃣ Upgrade pip
-python -m pip install --upgrade pip
+### Step 2.3: Activate the environment
+PowerShell:
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+CMD:
+```cmd
+.\venv\Scripts\activate.bat
+```
 
-# 8️⃣ Install Python dependencies
+**Learn:** Ensures Python uses this virtual environment.
+
+### Step 2.4: Install dependencies
+```powershell
+pip install --upgrade pip
 pip install -r requirements.txt
+```
 
-# 9️⃣ Create database tables
-Write-Host "Creating database tables..."
+**Learn:** `requirements.txt` contains all Python packages needed.
+
+---
+
+## 3️⃣ E — Execute (Database & Backend)
+
+### Step 3.1: Create database tables
+```powershell
 python -c "from app import db, app; from app.models import User; with app.app_context(): db.create_all(); print('Tables created successfully')"
+```
 
-# 🔟 Start Flask backend
-Write-Host "Starting Flask backend on http://127.0.0.1:5000..."
-Start-Process powershell -ArgumentList "flask run" -NoNewWindow
+**Learn:**  
+- `db.create_all()` creates tables based on SQLAlchemy models.  
+- `app.app_context()` sets the Flask application context.
 
-# 1️⃣1️⃣ Start React frontend
-cd frontend
+### Step 3.2: Start backend server
+```powershell
+flask run
+```
 
-# Install frontend dependencies if node_modules missing
-if (!(Test-Path ".\node_modules")) {
-    Write-Host "Installing frontend dependencies..."
-    npm install
-}
+- Default URL: `http://127.0.0.1:5000`  
+- API endpoints like `/login` and `/signup` are now active.
 
-Write-Host "Starting React frontend on http://localhost:3000..."
-Start-Process powershell -ArgumentList "npm start" -NoNewWindow
+---
 
-Write-Host "✅ ED-HACK RMDE script completed!"
+## 4️⃣ D — Deploy (Frontend & API Integration)
 
+### Step 4.1: Navigate to frontend
+Open a **new terminal**:
+
+```powershell
+cd ../frontend
+```
+
+### Step 4.2: Install Node dependencies
+```powershell
+npm install
+```
+
+### Step 4.3: Start React frontend
+```powershell
+npm start
+```
+
+- Default URL: `http://localhost:3000`  
+- Ensure all API fetch URLs in React point to the backend (`http://127.0.0.1:5000`).
+
+**Example in Login.js:**
+
+```javascript
+const response = await fetch("http://127.0.0.1:5000/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username, password })
+});
+```
+
+---
+
+## 5️⃣ Test the App
+
+1. Open browser → `http://localhost:3000`  
+2. Test login/signup features.  
+3. If errors occur:
+   - Backend not running → run `flask run`
+   - Fetch URLs incorrect → use full backend URL
+   - Database tables missing → run `db.create_all()`
+
+---
+
+## 6️⃣ Optional: Reset Database
+```powershell
+Remove-Item backend.db
+python -c "from app import db, app; from app.models import User; with app.app_context(): db.create_all()"
+```
+
+**Learn:** Allows you to start fresh with an empty database.
+
+---
+
+## 7️⃣ Troubleshooting
+
+| Error | Fix |
+|-------|-----|
+| `Import "pandas" could not be resolved` | Set VS Code interpreter to `venv\Scripts\python.exe` |
+| `TypeError: Failed to fetch` | Ensure backend is running; check React fetch URLs |
+| `sqlite3.OperationalError: no such table: user` | Run `db.create_all()` |
+| Missing packages | Activate venv and run `pip install -r requirements.txt` |
+
+---
+
+## ✅ Key Takeaways (RMED)
+
+- **R — Run:** Clone repo, select branch  
+- **M — Manage:** Set up venv, install dependencies  
+- **E — Execute:** Backend + database  
+- **D — Deploy:** Frontend + API integration  
+
+This guide covers **everything from cloning to running the full project**, so you can learn the workflow and replicate it for any similar Python + React project.
